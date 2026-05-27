@@ -12,14 +12,32 @@ typedef struct{
   
 }particle;
 
-float distance(Vector2 position1, Vector2 position2){
+float distance(particle p1, particle p2){
 
-  float x = (position1.x - position2.x)*(position1.x - position2.x);
-  float y = (position1.y - position2.y)*(position1.y - position2.y);
+  float x = (p1.particle_position.x - p2.particle_position.x)*(p1.particle_position.x - p2.particle_position.x);
+  float y = (p1.particle_position.y - p2.particle_position.y)*(p1.particle_position.y - p2.particle_position.y);
 
   return x + y;
 }
 
+bool closeenough(particle p1, particle p2){
+
+  return (distance(p1,p2) > 625);
+}
+
+particle update(particle p1, float time){
+
+  p1.particle_position.x += p1.particle_velocity.x * time;
+  p1.particle_position.y += p1.particle_velocity.y * time;
+
+  return p1;
+}
+
+void draw_particle(particle p1,float radius, Color color){
+
+  DrawCircleV(p1.particle_position,radius,color);
+
+}
 
 int main(){
   
@@ -36,24 +54,27 @@ int main(){
     
     BeginDrawing();
     ClearBackground(BLACK);
+    
     DrawFPS(10,10);
+    
     object.particle_position = GetMousePosition();
+    
     float dt = GetFrameTime();
+    
     chaser.particle_velocity = (Vector2) {(object.particle_position.x - chaser.particle_position.x) , (object.particle_position.y - chaser.particle_position.y)};
     
-    float dist = distance(object.particle_position,chaser.particle_position);
-    if (dist > 625){
+    if (closeenough(object,chaser)){
 
-      chaser.particle_position.x += chaser.particle_velocity.x * dt;
-      chaser.particle_position.y += chaser.particle_velocity.y * dt;
-
-      DrawCircleV(chaser.particle_position,12.5,RED);
+      chaser = update(chaser,dt);
+      draw_particle(chaser,12.5,RED);
+      
     }
     else{
-      DrawCircleV(chaser.particle_position, 50, YELLOW);
-    }    
-    DrawCircleV(object.particle_position,12.5,WHITE);
-
+      
+      draw_particle(chaser,50,YELLOW);
+    }
+    
+    draw_particle(object,12.5,WHITE);
     EndDrawing();
   }
   CloseWindow();
